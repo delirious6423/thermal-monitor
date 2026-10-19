@@ -1,0 +1,7 @@
+/target
+/.serena/
+/dist/
+/evidence/
+
+__pycache__/
+*.pyc

@@ -1,0 +1,16 @@
+[Unit]
+Description=Hardware temperature, fan and NVIDIA logging (5 seconds, 7 days)
+Documentation=man:sar(1) man:sadc(8)
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 %h/.local/lib/thermal-monitor/thermal-monitor.py
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+Nice=10
+Environment=LC_ALL=C
+
+[Install]
+WantedBy=default.target

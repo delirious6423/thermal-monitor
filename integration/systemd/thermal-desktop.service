@@ -1,0 +1,12 @@
+[Unit]
+Description=Conky desktop hardware monitor
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 %h/.local/lib/thermal-monitor/desktop-widget.py
+Restart=on-failure
+RestartSec=10
+UMask=0077
+Nice=10

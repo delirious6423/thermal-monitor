@@ -1,0 +1,13 @@
+[Unit]
+Description=Compact CPU and GPU top-bar monitor (Rust)
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/thermal-monitor
+Restart=on-failure
+RestartSec=10
+UMask=0077
+Nice=10
+NoNewPrivileges=true

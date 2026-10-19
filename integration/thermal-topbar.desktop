@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Thermal Monitor (Top Bar)
+Comment=Compact CPU and GPU readings with sensor details on click
+Exec=/usr/bin/systemctl --user start thermal-topbar.service
+Icon=utilities-system-monitor
+Terminal=false
+X-GNOME-Autostart-enabled=true
+X-GNOME-Autostart-Delay=8

@@ -1,0 +1,26 @@
+[Unit]
+Description=Read-only NVIDIA hotspot and VRAM temperature reader
+After=multi-user.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /usr/local/libexec/thermal-monitor/gputemps-bridge.py
+Restart=on-failure
+RestartSec=15
+RuntimeDirectory=thermal-monitor
+RuntimeDirectoryMode=0755
+UMask=0022
+NoNewPrivileges=true
+CapabilityBoundingSet=CAP_SYS_RAWIO
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+ReadWritePaths=/run/thermal-monitor
+Nice=10
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,35 @@
+[package]
+name = "thermal-monitor"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.99"
+publish = false
+license = "Apache-2.0"
+description = "Compact read-only CPU and GPU top-bar monitor for Linux"
+repository = "https://github.com/delirious6423/thermal-monitor"
+readme = "README.md"
+
+[dependencies]
+anyhow = "1.0.104"
+chrono = { version = "0.4.45", default-features = false, features = ["std"] }
+clap = { version = "4.6.7", features = ["derive", "env"] }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+thiserror = "2.0.21"
+tracing = { version = "0.1.44", default-features = false, features = ["std"] }
+tracing-subscriber = { version = "0.3.23", default-features = false, features = ["fmt"] }
+zbus = { version = "6", default-features = false, features = ["default-rt", "service"] }
+
+[dev-dependencies]
+tempfile = "3.27.0"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true
+
+[lints.clippy]
+unwrap_used = "warn"
+
+[lints.rust]
+unsafe_code = "forbid"
