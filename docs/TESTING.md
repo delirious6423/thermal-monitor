@@ -95,7 +95,7 @@ not independently reproduced results.
 ## Binary release checks
 
 The initial static musl build passed all 19 Rust tests on the musl target, the
-doc-test command, seven overlay regressions and eight release-safeguard tests.
+doc-test command, seven overlay regressions and nine release-safeguard tests.
 The exact release archive was installed in a disposable Ubuntu VM and passed the
 real tray protocol checks, fresh/repeated install, no-start, optional collector
 and Conky startup, edited-file protection, failed-start rollback and uninstall.

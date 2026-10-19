@@ -13,6 +13,10 @@ Python 3, Git and GNU binutils (`readelf`) are also required. Use the official
 Rust standalone component installer and verify its published SHA-256 before
 installing it into your chosen toolchain prefix. No runtime packages are bundled
 from a developer's home directory.
+The matching official `share/doc/rust/COPYRIGHT-library.html` must also be present
+in the selected sysroot so the runtime's public attribution can be packaged.
+The builder includes license files from the locked dependency graph, including
+build/test dependencies, without embedding their local source paths.
 
 The builder honors `RUSTC` for a separate compiler/sysroot and does not install
 toolchain components, packages or privileged services. It intentionally replaces
@@ -36,7 +40,7 @@ python3 scripts/build-release.py
 
 The builder emits exactly these publishable assets under `dist/`:
 
-- `thermal-monitor-linux-x86_64.tar.gz`: executable, installer, license,
+- `thermal-monitor-linux-x86_64.tar.gz`: executable, installer, project and dependency licenses,
   documentation and optional integration files, with a per-file manifest.
 - `install.py`: standalone online/offline installer.
 - `PRIVACY-AUDIT.json`: source commit and successful privacy/metadata checks.

@@ -128,6 +128,13 @@ class ReleaseTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'ownership'):
             audit.audit_archive(archive)
 
+    def test_license_contact_exception_does_not_hide_credentials_or_paths(self):
+        contact = b'upstream' + b'@' + b'public-author.example'
+        audit.check_bytes(contact, 'public upstream attribution', public_license_contacts=True)
+        for content in [b'ghp_' + b'x' * 36, b'/home/' + b'private-builder/project']:
+            with self.assertRaises(ValueError):
+                audit.check_bytes(content, 'upstream attribution', public_license_contacts=True)
+
 
 if __name__ == '__main__':
     unittest.main()

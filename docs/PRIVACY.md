@@ -35,7 +35,7 @@ excluded when the public repository was created.
 `scripts/build-release.py` builds a static musl executable from committed source.
 It replaces custom compiler flags with path-remapping flags for source, Cargo,
 toolchain and home directories. Release debug symbols are stripped. It packages
-only selected tracked files, with numeric owner/group zero, empty owner names,
+only selected tracked project files and public dependency license notices, with numeric owner/group zero, empty owner names,
 the public commit timestamp and a deterministic gzip header.
 
 Before publication, `scripts/audit-release.py` checks reachable `HEAD` history,
@@ -45,6 +45,9 @@ the explicitly public GitHub/extension identities. It rejects unsafe archive
 paths, links, non-normalized owner metadata, extra/missing manifest files and
 dynamically linked/debug executables. Its public `PRIVACY-AUDIT.json` records the
 source commit and check results without copying matched values or local paths.
+Public upstream copyright/contact notices are retained in the two generated
+license bundles. Only their email-contact check is exempted; credential and
+private-path checks still apply. They contain no device or installer state.
 
 SHA-256 files detect mismatches and corrupted downloads. They are downloaded from
 the same GitHub release, so they do not provide an independent publisher signature

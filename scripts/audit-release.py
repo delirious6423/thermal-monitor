@@ -16,12 +16,13 @@ PATTERNS = {
 }
 
 
-def check_bytes(content, label):
+def check_bytes(content, label, public_license_contacts=False):
     for name, pattern in PATTERNS.items():
         if re.search(pattern, content):
             # Do not echo the matched secret/path into a log or public report.
             raise ValueError(f'{name} detected in {label}')
-    emails = re.findall(rb'\b[A-Za-z0-9_.+%-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b', content)
+    # Upstream copyright contacts are intentional attribution, not device data.
+    emails = [] if public_license_contacts else re.findall(rb'\b[A-Za-z0-9_.+%-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b', content)
     for email in emails:
         if (email not in {b'ubuntu-appindicators@ubuntu.com', b'noreply@github.com'}
                 and not email.endswith(b'@users.noreply.github.com')):
@@ -63,7 +64,8 @@ def audit_archive(path):
                 raise ValueError('Duplicate or private archive content')
             with archive.extractfile(member) as stream:
                 content = stream.read()
-            check_bytes(content, 'archive member ' + relative)
+            check_bytes(content, 'archive member ' + relative,
+                        public_license_contacts=relative in {'licenses/DEPENDENCIES.txt', 'licenses/RUST-LIBRARY.html'})
             files[relative] = content
     expected = {}
     for line in files['MANIFEST.sha256'].decode('ascii').splitlines():
@@ -103,6 +105,7 @@ def main():
     print(json.dumps({'source_commit': git(args.repo, 'rev-parse', 'HEAD').decode().strip(),
                       'source_blobs_checked': blobs, 'archive_files_checked': members,
                       'source_and_binary_marker_scan': 'PASS', 'normalized_archive_metadata': 'PASS',
+                      'upstream_license_notices': 'Included; public copyright contacts retained',
                       'static_stripped_binary': 'PASS', 'scope': 'Reachable HEAD history and release payload; heuristic scan, not a security certification'}, indent=2))
 
 

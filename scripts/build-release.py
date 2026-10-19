@@ -40,6 +40,24 @@ def main():
     binary = ROOT / 'target' / TARGET / 'release/thermal-monitor'
     files = {'bin/thermal-monitor': binary.read_bytes(), 'VERSION': (version + '\n').encode(),
              'SOURCE_COMMIT': (commit + '\n').encode()}
+    metadata = json.loads(output('cargo', 'metadata', '--locked', '--format-version', '1', '--filter-platform', TARGET))
+    notices = []
+    for package in sorted(metadata['packages'], key=lambda item: (item['name'], item['version'])):
+        if package['name'] == 'thermal-monitor':
+            continue
+        directory = Path(package['manifest_path']).parent
+        licenses = sorted(path for path in directory.iterdir() if path.is_file()
+                          and path.name.upper().startswith(('LICENSE', 'COPYING', 'COPYRIGHT', 'NOTICE', 'UNLICENSE')))
+        if not licenses:
+            raise ValueError('Missing upstream license files for ' + package['name'])
+        notices.append(f"\n=== {package['name']} {package['version']} ({package['license']}) ===\n".encode())
+        for license_file in licenses:
+            notices.extend([(license_file.name + '\n').encode(), license_file.read_bytes(), b'\n'])
+    files['licenses/DEPENDENCIES.txt'] = b''.join(notices)
+    runtime_notices = sysroot / 'share/doc/rust/COPYRIGHT-library.html'
+    if not runtime_notices.is_file():
+        raise SystemExit('Build needs the matching official Rust COPYRIGHT-library.html runtime notices; see docs/RELEASING.md')
+    files['licenses/RUST-LIBRARY.html'] = runtime_notices.read_bytes()
     names = ['README.md', 'LICENSE', 'CHANGELOG.md', 'CONTRIBUTING.md', 'install.py']
     names += output('git', 'ls-files', '--', 'docs', 'integration').splitlines()
     for name in names:
