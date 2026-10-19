@@ -39,6 +39,7 @@ while True:
     if not controls.get('missing_gpu'):
         put('run/thermal-monitor/gputemps.json', json.dumps({
             'timestamp': int(now * 1000), 'received_monotonic': time.monotonic() - age,
+            'cpu_package_watts': controls.get('cpu_watts', 24),
             'gpus': [{'index': 0, 'core': controls.get('gpu', 45), 'junction': 52, 'vram': 50}]}))
     else:
         (ROOT / 'run/thermal-monitor/gputemps.json').unlink(missing_ok=True)
@@ -48,6 +49,7 @@ while True:
     (logs / 'gpu-20261020.jsonl').write_text(json.dumps({
         'type': 'sample', 'timestamp': dt.datetime.fromtimestamp(now, dt.timezone.utc).isoformat(),
         'gpus': [{'index': '0', 'utilization.gpu': str(controls.get('load', 40)),
+                  'power.draw': str(controls.get('gpu_watts', 35.6)),
                   'memory.used': str(controls.get('vram_used', 4096)), 'memory.total': '16384'}]
     }) + '\n{partial')
     time.sleep(1)

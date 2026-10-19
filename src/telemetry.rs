@@ -147,8 +147,12 @@ pub struct Snapshot {
     pub cpu_percent: Option<f64>,
     /// CPU package temperature in Celsius.
     pub cpu_celsius: Option<f64>,
+    /// Average CPU package power from the read-only bridge, in watts.
+    pub cpu_watts: Option<f64>,
     /// NVIDIA utilization from the existing logger.
     pub gpu_percent: Option<f64>,
+    /// GPU power reported by the NVIDIA driver, in watts.
+    pub gpu_watts: Option<f64>,
     /// Dedicated GPU memory allocation from the existing logger.
     pub gpu_memory: Option<GpuMemory>,
     /// GPU core temperature from the read-only bridge.
@@ -174,11 +178,13 @@ impl Snapshot {
     /// The compact label shown in the top bar.
     pub fn panel_label(&self) -> String {
         format!(
-            "CPU {} {} · GPU {} {}",
+            "CPU {} {} {} · GPU {} {} {}",
             reading(self.cpu_percent, "%"),
             reading(self.cpu_celsius, "°"),
+            reading(self.cpu_watts, "W"),
             reading(self.gpu_percent, "%"),
-            reading(self.gpu_celsius, "°")
+            reading(self.gpu_celsius, "°"),
+            reading(self.gpu_watts, "W")
         )
     }
 
@@ -186,14 +192,16 @@ impl Snapshot {
     pub fn overview(&self) -> Vec<String> {
         vec![
             format!(
-                "CPU   {} · {}",
+                "CPU   {} · {} · {}",
                 reading(self.cpu_percent, "%"),
-                reading(self.cpu_celsius, "°C")
+                reading(self.cpu_celsius, "°C"),
+                reading(self.cpu_watts, " W")
             ),
             format!(
-                "GPU   {} · {}",
+                "GPU   {} · {} · {}",
                 reading(self.gpu_percent, "%"),
-                reading(self.gpu_celsius, "°C")
+                reading(self.gpu_celsius, "°C"),
+                reading(self.gpu_watts, " W")
             ),
             format!(
                 "VRAM   {}",
@@ -245,6 +253,7 @@ impl Snapshot {
 #[derive(Deserialize)]
 struct GpuFrame {
     timestamp: i64,
+    cpu_package_watts: Option<f64>,
     gpus: Vec<GpuTemperatures>,
 }
 
@@ -263,6 +272,10 @@ fn fresh(timestamp: i64, now: i64, maximum: i64) -> bool {
 
 fn valid_temperature(value: Option<f64>) -> Option<f64> {
     value.filter(|value| value.is_finite() && (-40.0..=200.0).contains(value))
+}
+
+fn valid_power(value: Option<f64>) -> Option<f64> {
+    value.filter(|value| value.is_finite() && *value >= 0.0)
 }
 
 fn read_text(path: &Path) -> Option<String> {
@@ -286,6 +299,7 @@ fn read_number(path: &Path) -> Option<f64> {
 #[derive(Default)]
 struct GpuLogSample {
     percent: Option<f64>,
+    watts: Option<f64>,
     memory: Option<GpuMemory>,
 }
 
@@ -318,6 +332,7 @@ fn log_sample(text: &str, now: i64) -> Option<GpuLogSample> {
             percent: number("utilization.gpu")
                 .filter(|v| v.is_finite() && (0.0..=100.0).contains(v)),
             memory: GpuMemory::parse(number("memory.used"), number("memory.total")),
+            watts: valid_power(number("power.draw")),
         });
     }
     None
@@ -400,15 +415,18 @@ impl Sampler {
         if let Some(frame) = read_text(&self.root.join("run/thermal-monitor/gputemps.json"))
             .and_then(|s| serde_json::from_str::<GpuFrame>(&s).ok())
             .filter(|frame| fresh(frame.timestamp, now_ms, GPU_MAX_AGE_MS))
-            && let Some(gpu) = frame.gpus.iter().find(|gpu| gpu.index == 0)
         {
-            // Zero from an undocumented GPU register means unavailable, not 0°C.
-            result.gpu_celsius = valid_temperature(gpu.core).filter(|v| *v > 0.0);
-            result.hotspot_celsius = valid_temperature(gpu.junction).filter(|v| *v > 0.0);
-            result.vram_celsius = valid_temperature(gpu.vram).filter(|v| *v > 0.0);
+            result.cpu_watts = valid_power(frame.cpu_package_watts);
+            if let Some(gpu) = frame.gpus.iter().find(|gpu| gpu.index == 0) {
+                // Zero from an undocumented GPU register means unavailable, not 0°C.
+                result.gpu_celsius = valid_temperature(gpu.core).filter(|v| *v > 0.0);
+                result.hotspot_celsius = valid_temperature(gpu.junction).filter(|v| *v > 0.0);
+                result.vram_celsius = valid_temperature(gpu.vram).filter(|v| *v > 0.0);
+            }
         }
         let gpu = self.gpu_log_sample(now_ms).unwrap_or_default();
         result.gpu_percent = gpu.percent;
+        result.gpu_watts = gpu.watts;
         result.gpu_memory = gpu.memory;
         result
     }
@@ -510,7 +528,7 @@ mod tests {
             cpu_percent: Some(0.0),
             ..Snapshot::default()
         };
-        assert_eq!(sample.panel_label(), "CPU 0% N/A · GPU N/A N/A");
+        assert_eq!(sample.panel_label(), "CPU 0% N/A N/A · GPU N/A N/A N/A");
         assert_eq!(valid_temperature(Some(f64::NAN)), None);
         assert_eq!(valid_temperature(Some(-274.0)), None);
     }

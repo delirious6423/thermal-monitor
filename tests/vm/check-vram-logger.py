@@ -20,7 +20,7 @@ def fake_driver(command, **_kwargs):
     fields = command[1].split('=', 1)[1].split(',')
     assert fields.count('memory.used') == fields.count('memory.total') == 1
     values = {'index':'0', 'name':'Demo GPU', 'memory.used':'4096', 'memory.total':'16384',
-              'utilization.gpu':'40', 'temperature.gpu':'45'}
+              'utilization.gpu':'40', 'temperature.gpu':'45', 'power.draw':'35.6'}
     output = io.StringIO()
     csv.writer(output).writerow([values.get(field, '0') for field in fields])
     return SimpleNamespace(returncode=0, stdout=output.getvalue(), stderr='')
@@ -37,7 +37,9 @@ with tempfile.TemporaryDirectory() as home:
     assert collector.metadata()['gpu_units']['memory.used'] == 'MiB'
     result = subprocess.run([str(root / 'thermal-monitor'), '--once', '--root', '/tmp/thermal-fixture',
         '--home', home], check=True, text=True, capture_output=True)
-    memory = json.loads(result.stdout)['gpu_memory']
+    snapshot = json.loads(result.stdout)
+    memory = snapshot['gpu_memory']
+    assert snapshot['gpu_watts'] == 35.6
     assert memory == {'used_mib':4096.0, 'total_mib':16384.0}, memory
     old = collector.LOG_DIR / ('gpu-' + (now.date()-dt.timedelta(days=7)).strftime('%Y%m%d') + '.jsonl')
     kept = collector.LOG_DIR / ('gpu-' + (now.date()-dt.timedelta(days=6)).strftime('%Y%m%d') + '.jsonl')

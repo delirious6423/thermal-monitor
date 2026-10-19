@@ -117,7 +117,7 @@ fn missing_all_inputs_is_a_valid_unknown_snapshot() {
     let dir = tempfile::tempdir().unwrap();
     let mut sampler = Sampler::new(dir.path().into(), dir.path().join("home"));
     let sample = sampler.sample(NOW);
-    assert_eq!(sample.panel_label(), "CPU N/A N/A · GPU N/A N/A");
+    assert_eq!(sample.panel_label(), "CPU N/A N/A N/A · GPU N/A N/A N/A");
     assert!(sample.disks.is_empty());
 }
 
@@ -148,4 +148,58 @@ fn vram_reads_allocated_capacity_and_expires_with_the_gpu_log() {
     assert_eq!(snapshot.gpu_memory.unwrap().label(), "25% · 4.0 / 16.0 GiB");
     assert_eq!(snapshot.gpu_percent, Some(0.0));
     assert!(sampler.sample(NOW + 20_001).gpu_memory.is_none());
+}
+
+#[test]
+fn power_readings_are_independent_validated_and_expire() {
+    let (dir, mut sampler) = fixture();
+    let frame = serde_json::json!({"timestamp": NOW, "cpu_package_watts":24.4, "gpus":[]});
+    put(
+        dir.path(),
+        "run/thermal-monitor/gputemps.json",
+        &frame.to_string(),
+    );
+    let record = serde_json::json!({"type":"sample", "timestamp":"2026-10-20T00:00:00Z", "gpus":[
+        {"index":"0", "utilization.gpu":"N/A", "power.draw":"35.6"}
+    ]});
+    let log = "home/.local/state/thermal-monitor/gpu-20261020.jsonl";
+    put(dir.path(), log, &record.to_string());
+    let sample = sampler.sample(NOW);
+    assert_eq!(sample.cpu_watts, Some(24.4));
+    assert_eq!(sample.gpu_watts, Some(35.6));
+    assert_eq!(sample.gpu_percent, None);
+    assert_eq!(sample.panel_label(), "CPU N/A 51° 24W · GPU N/A N/A 36W");
+    assert_eq!(sample.overview()[0], "CPU   N/A · 51°C · 24 W");
+    assert_eq!(sample.overview()[1], "GPU   N/A · N/A · 36 W");
+    assert_eq!(sampler.sample(NOW - 1).cpu_watts, None);
+    assert_eq!(sampler.sample(NOW - 1).gpu_watts, None);
+    assert_eq!(sampler.sample(NOW + 15_001).cpu_watts, None);
+    assert_eq!(sampler.sample(NOW + 15_001).gpu_watts, Some(35.6));
+    assert_eq!(sampler.sample(NOW + 20_001).gpu_watts, None);
+    for value in [
+        serde_json::json!(0),
+        serde_json::json!(-1),
+        serde_json::Value::Null,
+    ] {
+        let mut frame = frame.clone();
+        frame["cpu_package_watts"] = value.clone();
+        put(
+            dir.path(),
+            "run/thermal-monitor/gputemps.json",
+            &frame.to_string(),
+        );
+        let mut record = record.clone();
+        record["gpus"][0]["power.draw"] = value.clone();
+        put(dir.path(), log, &record.to_string());
+        let sample = sampler.sample(NOW);
+        let expected = if value == 0 { Some(0.0) } else { None };
+        assert_eq!(sample.cpu_watts, expected);
+        assert_eq!(sample.gpu_watts, expected);
+    }
+    for value in ["N/A", "NaN", "inf"] {
+        let mut record = record.clone();
+        record["gpus"][0]["power.draw"] = value.into();
+        put(dir.path(), log, &record.to_string());
+        assert_eq!(sampler.sample(NOW).gpu_watts, None);
+    }
 }

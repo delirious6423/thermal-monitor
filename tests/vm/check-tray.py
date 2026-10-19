@@ -59,7 +59,7 @@ if args.quit_only:
     print('PASS quit event sent')
     raise SystemExit(0)
 
-wait_until(lambda: 'CPU 25% 51° · GPU 40% 45°' == props()['XAyatanaLabel'])
+wait_until(lambda: 'CPU 25% 51° 24W · GPU 40% 45° 36W' == props()['XAyatanaLabel'])
 p = props()
 assert p['Id'] == 'thermal-monitor' and p['Status'] == 'Active'
 assert p['ItemIsMenu'] is True and p['Menu'] == '/MenuBar'
@@ -71,6 +71,8 @@ def collect(node):
     for child in node[2]:
         collect(child.unpack() if hasattr(child, 'unpack') else child)
 collect(reply[1])
+assert 'CPU   25% · 51°C · 24 W' in labels, labels
+assert 'GPU   40% · 45°C · 36 W' in labels, labels
 assert 'GPU hotspot   52°C' in labels, labels
 assert 'VRAM temperature   50°C' in labels
 assert 'VRAM   25% · 4.0 / 16.0 GiB' in labels
@@ -82,21 +84,21 @@ assert 'Show graphs' in labels and 'Open 7-day logs' in labels
 print('PASS label, protocol properties and complete menu')
 
 control = Path('/tmp/thermal-fixture/control.json')
-control.write_text(json.dumps({'cpu': 62000, 'gpu': 60, 'load': 80}))
-wait_until(lambda: props()['XAyatanaLabel'] == 'CPU 25% 62° · GPU 80% 60°')
-wait_until(lambda: 'CPU 25% 62° · GPU 80% 60°' in observed_labels)
+control.write_text(json.dumps({'cpu': 62000, 'gpu': 60, 'load': 80, 'cpu_watts': 30, 'gpu_watts': 80}))
+wait_until(lambda: props()['XAyatanaLabel'] == 'CPU 25% 62° 30W · GPU 80% 60° 80W')
+wait_until(lambda: 'CPU 25% 62° 30W · GPU 80% 60° 80W' in observed_labels)
 print('PASS changing values and live label notifications')
 control.write_text(json.dumps({'vram_used':8192}))
 wait_until(lambda: call('/MenuBar', 'com.canonical.dbusmenu', 'GetProperty', GLib.Variant('(is)', (3,'label')))[0] == 'VRAM   50% · 8.0 / 16.0 GiB')
 print('PASS live VRAM allocation updates')
 control.write_text(json.dumps({'age': 30}))
-wait_until(lambda: props()['XAyatanaLabel'] == 'CPU 25% 51° · GPU N/A N/A')
+wait_until(lambda: props()['XAyatanaLabel'] == 'CPU 25% 51° N/A · GPU N/A N/A N/A')
 print('PASS stale data becomes N/A')
 control.write_text(json.dumps({'missing_gpu': True}))
 wait_until(lambda: 'GPU 40% N/A' in props()['XAyatanaLabel'])
 print('PASS missing GPU sensor retains independent load')
 control.write_text('{}')
-wait_until(lambda: props()['XAyatanaLabel'] == 'CPU 25% 51° · GPU 40% 45°')
+wait_until(lambda: props()['XAyatanaLabel'] == 'CPU 25% 51° 24W · GPU 40% 45° 36W')
 
 click(1001)
 wait_until(lambda: Path('/tmp/thermal-graphs-active').exists())

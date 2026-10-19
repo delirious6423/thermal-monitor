@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.1 — 2026-10-20
+
+- Show CPU package and GPU power in watts by default in the top bar and menu.
+- Reuse logged NVIDIA power; add read-only Intel RAPL package-0 averages to the
+  optional privileged snapshot bridge. Existing seven-day logs retain both.
+- Expire power readings with their source; unknown values remain `N/A`.
+
 ## 0.1.0 — 2026-10-20
 
 Initial public source version, tested on Ubuntu/GNOME with NVIDIA GPU 0.

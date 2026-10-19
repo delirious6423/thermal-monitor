@@ -12,6 +12,7 @@ cargo test --locked --doc
 cargo deny check
 cargo machete
 python3 tests/vm/check-desktop.py
+python3 tests/test_power_bridge.py
 python3 -m unittest discover -s tests -p test_release.py
 ```
 
@@ -22,6 +23,9 @@ and malformed newest samples, expired temperature and malformed devices.
 Release tests cover checksum/manifest failures before execution, unsafe archive
 entries, file/service rollback, removal order and privacy scanner regression cases.
 See [RELEASING.md](RELEASING.md) for real installer tests in a disposable VM.
+Power fixtures cover valid/zero/negative/unsupported/stale CPU/GPU watts, while
+the Python bridge test covers energy deltas, first reads, wraps/resets, long gaps
+and failed-counter recovery without double counting package subdomains.
 
 ## Disposable desktop tests
 
@@ -62,18 +66,27 @@ inside a fresh VM with the same guarded hostname. The native tests inspect actua
 GNOME actors for live values, submenu stability and duplicate indicators.
 `check-vram-logger.py` additionally tests simulated driver CSV through the real
 collector and Rust reader, including the seven-day retention boundary.
+`check-power-bridge.py` runs the real bridge loop with a synthetic GPU process
+and RAPL counters, verifying publication, failed-counter isolation and recovery.
 
 ## Recorded results, 2026-10-20
 
 | Check | Result |
 | --- | --- |
-| Rust tests | 19 passed |
+| Rust tests | 20 passed (0.1.1) |
 | Clippy / formatting / dependency checks | Passed |
 | Doc tests | Passed; no doctests currently defined |
 | Python overlay regressions | 7 passed |
+| CPU power bridge counter test and VM bridge loop | Passed with synthetic counters |
 | Tray protocol, native GNOME menu and Conky/Sway checks | Passed in disposable VMs |
 | Logger CSV → record → Rust reader and retention | Passed with a simulated driver |
 | Nested GNOME Conky rendering | Not established: software Xwayland initialization crashed |
+
+Version 0.1.1 also passed live native GNOME panel/menu watt updates and stale-data
+checks. The native submenu assertion initially ran during extension reinitialization
+after the protocol restart test; rerunning it after the extension settled passed.
+Power does not add a driver subprocess or change the sampling interval. No new
+CPU or memory performance measurement was made for this feature.
 
 Earlier GNU-build Rust indicator, 60 seconds / 61 VM samples, five-second cadence:
 median RSS **5.15 MiB**, PSS **3.14 MiB**. CPU counters recorded 0.01 seconds,

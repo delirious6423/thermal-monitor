@@ -1,16 +1,16 @@
 # Thermal Monitor
 
-A compact Linux top-bar monitor for CPU/GPU load, temperatures, VRAM allocation
+A compact Linux top-bar monitor for CPU/GPU load, temperatures, power, VRAM allocation
 and RAM. A small Rust indicator provides the menu; optional Python integrations
 record seven days of telemetry and feed a Conky desktop overlay.
 
-<img src="docs/images/overview.png" width="410" alt="GNOME menu showing CPU, GPU, VRAM allocation and RAM">
+<img src="docs/images/overview.png" width="355" alt="GNOME panel and menu showing CPU/GPU watts, utilization, temperatures, VRAM and RAM">
 
 *Native disposable-VM previews use simulated GPU readings.*
 
 ## What it shows
 
-- CPU and GPU utilization and temperature in the top bar.
+- CPU and GPU utilization, temperature and watts in the top bar and main menu.
 - CPU, GPU, VRAM allocation and RAM in the main menu.
 - GPU hotspot, VRAM temperature, fan RPM and NVMe temperatures under **More sensors**.
 - **Show graphs / Hide graphs**, **Open 7-day logs**, and **Quit indicator**.
@@ -62,6 +62,10 @@ cargo build --release --locked
 CPU/RAM readings work without the optional integrations. GPU load and allocation
 need the collector; GPU temperatures currently need the separate snapshot bridge.
 CPU utilization needs two samples, so it is unavailable on a one-shot read.
+GPU watts reuse the collector's existing driver reading. CPU watts need the
+updated optional bridge: it averages Intel RAPL package-0 energy over each
+five-second interval. A first sample, reset, unreadable counter or missing bridge
+shows `N/A`. These are component readings, not total wall-plug power.
 
 See **[Setup and removal](docs/SETUP.md)** for user services, login startup, logging,
 the overlay, and the optional privileged GPU bridge. Existing installations can
@@ -112,6 +116,7 @@ cargo test --locked --doc
 cargo deny check
 cargo machete
 python3 tests/vm/check-desktop.py
+python3 tests/test_power_bridge.py
 ```
 
 The code uses safe Rust 2024, `zbus` for StatusNotifierItem/DBusMenu, and an

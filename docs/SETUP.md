@@ -155,6 +155,15 @@ atomically replaces a world-readable JSON snapshot. The unit restricts its
 capability set and writable paths; it still has privileged device-memory access.
 Do not run the Rust indicator or Conky as root.
 
+For CPU watts, update the wrapper from this version and restart
+`gputemps-bridge.service` after reviewing it. It adds a read of the protected
+Intel RAPL package-0 energy counter and publishes average watts in the same
+snapshot. It does not change power limits or file permissions. An older bridge
+still supplies GPU temperatures but leaves CPU watts `N/A`. The user-level
+installer does not update root-owned files. GPU watts require only the collector;
+they work without this bridge. The seven-day collector automatically records
+the additional CPU field.
+
 ## Diagnose, undo or remove
 
 ```sh
