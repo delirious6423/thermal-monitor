@@ -110,7 +110,7 @@ class ReleaseTests(unittest.TestCase):
         self.assertFalse(unit.exists())
 
     def test_privacy_scan_rejects_paths_credentials_keys_and_private_email(self):
-        examples = [b'/home/' + b'private-builder/project', b'ghp_' + b'x' * 36,
+        examples = [b'/home/' + b'private-builder/project', b'/mnt/' + b'private-volume/project', b'ghp_' + b'x' * 36,
                     b'-----BEGIN ' + b'PRIVATE KEY-----\n' + b'a' * 40,
                     b'person' + b'@' + b'private-domain.example']
         for value in examples:

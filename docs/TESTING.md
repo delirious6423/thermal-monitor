@@ -75,7 +75,7 @@ collector and Rust reader, including the seven-day retention boundary.
 | Logger CSV → record → Rust reader and retention | Passed with a simulated driver |
 | Nested GNOME Conky rendering | Not established: software Xwayland initialization crashed |
 
-Updated Rust indicator, 60 seconds / 61 VM samples, five-second cadence:
+Earlier GNU-build Rust indicator, 60 seconds / 61 VM samples, five-second cadence:
 median RSS **5.15 MiB**, PSS **3.14 MiB**. CPU counters recorded 0.01 seconds,
 near tick resolution. GNOME, the collector and Conky are excluded. No battery-life
 or meaningful CPU-saving claim follows from this short idle run.
@@ -91,3 +91,14 @@ measurement, not a process-footprint measurement. Public screenshots are VM
 captures. Machine-specific logs and original private development history are
 excluded from the public repository; these measurements are reported observations,
 not independently reproduced results.
+
+## Binary release checks
+
+The initial static musl build passed all 19 Rust tests on the musl target, the
+doc-test command, seven overlay regressions and eight release-safeguard tests.
+The exact release archive was installed in a disposable Ubuntu VM and passed the
+real tray protocol checks, fresh/repeated install, no-start, optional collector
+and Conky startup, edited-file protection, failed-start rollback and uninstall.
+Original configuration and log contents survived removal. Its memory footprint
+has not been remeasured; the earlier GNU-build measurements above are not static
+release measurements. See the release's privacy audit for artifact checks.

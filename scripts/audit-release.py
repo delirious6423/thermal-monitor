@@ -10,6 +10,7 @@ import tarfile
 
 PATTERNS = {
     'private home path': rb'(?:/(?:home|Users)/[A-Za-z0-9_.-]+/|[A-Za-z]:\\Users\\[A-Za-z0-9_.-]+\\)',
+    'private mount path': rb'/(?:mnt|media|run/media)/[A-Za-z0-9_.-]+/',
     'credential': rb'\b(?:gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|AKIA[0-9A-Z]{16}|xox[baprs]-[A-Za-z0-9-]{20,})\b',
     'private key': rb'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----\r?\n[A-Za-z0-9+/=]{30,}',
 }

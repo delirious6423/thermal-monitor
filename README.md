@@ -99,7 +99,7 @@ installed or enabled by the user-level installers. Logs stay under
 They contain timestamps, hardware metadata, boot IDs and sensor readings.
 
 See [sensor formats and freshness](docs/SENSORS.md) and
-[tests and measurements](docs/TESTING.md). Current app-only VM median RSS was
+[tests and measurements](docs/TESTING.md). The earlier GNU-build app-only VM median RSS was
 5.15 MiB; this excludes GNOME, the collector and Conky and is not a battery claim.
 
 ## Development

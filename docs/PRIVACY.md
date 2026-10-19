@@ -40,7 +40,7 @@ the public commit timestamp and a deterministic gzip header.
 
 Before publication, `scripts/audit-release.py` checks reachable `HEAD` history,
 commit email addresses, archive contents and the executable for common credential
-formats, private keys, private home-directory paths and email addresses outside
+formats, private keys, private home/mount paths and email addresses outside
 the explicitly public GitHub/extension identities. It rejects unsafe archive
 paths, links, non-normalized owner metadata, extra/missing manifest files and
 dynamically linked/debug executables. Its public `PRIVACY-AUDIT.json` records the

@@ -93,6 +93,7 @@ print('PASS edited files protected on update and removal; services left running'
 
 with tempfile.TemporaryDirectory() as directory:
     shim = Path(directory) / 'systemctl'
+    (HOME / 'thermal-fail-once').unlink(missing_ok=True)
     shim.write_text('''#!/bin/sh
 if [ "$*" = "--user start thermal-topbar.service" ] && [ ! -f "$HOME/thermal-fail-once" ]; then
     touch "$HOME/thermal-fail-once"
