@@ -1,10 +1,52 @@
 # Setup and removal
 
 These instructions target Ubuntu with systemd and a working desktop session.
-Build first with `cargo build --release --locked`. Run user commands without sudo.
+Use a prebuilt release or build with `cargo build --release --locked`. Run user commands without sudo.
 The service templates are examples; review paths and sensor support for your system.
 
-## Existing installation
+## Simple release installer
+
+Download and verify `install.py` using the commands in the README, then run:
+
+```sh
+python3 install.py                             # Indicator and login startup
+python3 install.py --with-logger --with-overlay # Optional components too
+```
+
+The default needs Python 3.10+, systemd user services and a running tray host;
+GNOME needs an AppIndicator extension. Logging also needs a working NVIDIA driver,
+`nvidia-smi` and Ubuntu's `sysstat` package. Graphs need Conky with X11 support.
+The installer checks these dependencies but does not install system packages.
+The static binary needs no Rust toolchain, GTK, Python runtime or system glibc.
+The installer and optional Python integrations do need Python.
+
+`--no-start` installs without starting new services immediately; previously
+running managed services are restarted to apply their update. `--release v0.1.0`
+selects a specific release. Existing managed optional components remain installed
+on later updates even if their flags are omitted. The overlay starts hidden,
+unless it was already visible before the update.
+
+For offline installation, download the archive and `SHA256SUMS` into one directory:
+
+```sh
+python3 install.py --archive ./thermal-monitor-linux-x86_64.tar.gz
+```
+
+Or verify/extract the archive and run `python3 thermal-monitor/install.py`; its
+per-file manifest is verified before installation. To update or uninstall:
+
+```sh
+python3 ~/.local/lib/thermal-monitor/install.py
+python3 ~/.local/lib/thermal-monitor/install.py --uninstall
+```
+
+Removal restores the original files and service states, including existing
+installations that were upgraded. Sensor logs and backups stay local. If a
+managed file has been edited since installation, updating/removing stops before
+changing files so the edits can be saved and reviewed. Neither action touches
+the privileged root bridge. See [privacy and checksum limits](PRIVACY.md).
+
+## Existing source installation
 
 If these services already exist, keep their settings and use the installers:
 

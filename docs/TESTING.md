@@ -12,12 +12,16 @@ cargo test --locked --doc
 cargo deny check
 cargo machete
 python3 tests/vm/check-desktop.py
+python3 -m unittest discover -s tests -p test_release.py
 ```
 
 Rust fixture tests cover CPU deltas/resets, memory parsing, stale/invalid GPU
 samples, partial JSONL tails, independent VRAM parsing, menu structure and bounded
 reads. Seven Python feeder regressions cover live/zero/invalid allocation, stale
 and malformed newest samples, expired temperature and malformed devices.
+Release tests cover checksum/manifest failures before execution, unsafe archive
+entries, file/service rollback, removal order and privacy scanner regression cases.
+See [RELEASING.md](RELEASING.md) for real installer tests in a disposable VM.
 
 ## Disposable desktop tests
 

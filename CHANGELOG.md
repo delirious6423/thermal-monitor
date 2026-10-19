@@ -4,6 +4,10 @@
 
 Initial public source version, tested on Ubuntu/GNOME with NVIDIA GPU 0.
 
+- Prebuilt static Linux x86-64 release with checksums and a public privacy audit.
+- User-level installer with optional logging/overlay, updates, original-file
+  backups, failed-update rollback and removal that retains sensor history.
+
 - Safe Rust StatusNotifierItem indicator with numeric CPU/GPU panel readings.
 - CPU, GPU, VRAM allocation and RAM overview, plus additional sensors.
 - Five-second sampling, validated inputs and independent stale/missing handling.

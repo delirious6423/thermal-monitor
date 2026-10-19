@@ -24,6 +24,28 @@ load or allocation remains zero. Quitting either display leaves the logger runni
 
 ## Start here
 
+### Download and install
+
+A [prebuilt Linux x86-64 release](https://github.com/delirious6423/thermal-monitor/releases/latest)
+is available; Rust is not needed. The installer needs Python 3.10+ and systemd
+user services. In a new empty directory, run it as your desktop user, without sudo:
+
+```sh
+curl -fLO https://github.com/delirious6423/thermal-monitor/releases/latest/download/install.py &&
+curl -fLO https://github.com/delirious6423/thermal-monitor/releases/latest/download/SHA256SUMS &&
+sha256sum --ignore-missing --check SHA256SUMS &&
+python3 install.py
+```
+
+This installs the indicator and login entry for your user. It verifies the
+downloaded binary package before changing files. Original files are backed up;
+edited files are protected on subsequent updates/removal. Add `--with-logger`
+and/or `--with-overlay` for the optional integrations; missing dependencies are
+reported before installation. The root GPU reader is always a separate manual
+setup. See [setup, updates and removal](docs/SETUP.md).
+
+### Build from source
+
 Requires Linux, Rust **1.99 or newer**, and a desktop with StatusNotifierItem support.
 GNOME needs an AppIndicator extension. Numeric panel labels use `XAyatanaLabel`;
 other tray hosts may display only the icon. No GTK or Python runtime is required
@@ -98,6 +120,8 @@ and overlay feeder remain separate Python programs.
 
 Contributions: [CONTRIBUTING.md](CONTRIBUTING.md).
 Changes: [CHANGELOG.md](CHANGELOG.md).
+Privacy: [PRIVACY.md](docs/PRIVACY.md).
+Release build and checks: [RELEASING.md](docs/RELEASING.md).
 
 Licensed under [Apache-2.0](LICENSE). Conky, sysstat, NVIDIA tooling, GNOME and
 [gputemps](https://github.com/ThomasBaruzier/gddr6-core-junction-vram-temps)
